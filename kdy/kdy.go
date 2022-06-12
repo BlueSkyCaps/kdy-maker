@@ -13,11 +13,13 @@ import (
 )
 
 var orgFrameBasePath = path.Join("static", "kdy_frames")
-var tmpOutBasePath = path.Join("static", "tmp")
-var tmpOutBasePathAbs string
+var tmpFrameBasePath = path.Join("static", "tmp")
+var finalOutBasePath = path.Join("static", "out")
+
 var pointPath = path.Join("config", "point.json")
 var orgFramePathsList []string
 var tmpFramePathsList []string
+var gifFrameNames []string
 var point Point
 
 func init() {
@@ -33,11 +35,17 @@ func init() {
 	}
 	// 生成后的帧图在 "static\tmp\" 目录下 需要将"/"替换成windows分隔符"\" 否则GoGif包会寻找字符得到错误文件名
 	for _, n := range tmpNames {
-		replacedSpPath := strings.Replace(path.Join(tmpOutBasePath, n), "/", "\\", -1)
+		replacedSpPath := strings.Replace(path.Join(tmpFrameBasePath, n), "/", "\\", -1)
 		tmpFramePathsList = append(tmpFramePathsList, replacedSpPath)
 	}
 	// "static\tmp\"
-	tmpOutBasePathAbs = strings.Replace(path.Join(tmpOutBasePath), "/", "\\", -1)
+	tmpFrameBasePath = strings.Replace(path.Join(tmpFrameBasePath), "/", "\\", -1)
+	// "static\out\"
+	finalOutBasePath = strings.Replace(path.Join(finalOutBasePath), "/", "\\", -1)
+	// 文件名x.png改为x.gif 用于生成gif动图 gifFrameNames存储的是已经形成了的每一张gif格式的图片
+	for _, n := range tmpNames {
+		gifFrameNames = append(gifFrameNames, strings.Replace(n, ".png", ".gif", 1))
+	}
 
 }
 func RunMaker() {
@@ -65,7 +73,8 @@ func readGifHandler() {
 			common.DebugPrint(err)
 		}
 		gifPtr := gg.NewContextForImage(currentImage)
-		gifPtr.SetRGB(0, 205, 102)
+		// 设置rgb颜色 值为0到1，原始数值/255得到相对的rgb值
+		gifPtr.SetRGB(0, 0.8, 0.4) //默认亮绿色
 		if currentPoint.LeftFlag {
 			/* 开始渲染左边*/
 			if err := gifPtr.LoadFontFace("C:/Windows/Fonts/simsun.ttc", currentPoint.LeftSize); err != nil {
@@ -81,13 +90,17 @@ func readGifHandler() {
 			gifPtr.DrawString("加班", currentPoint.RightX, currentPoint.RightY)
 		}
 		// 保存当前帧效果图
-		sErr := gifPtr.SavePNG(path.Join(tmpOutBasePath, strconv.Itoa(i+1)+".png"))
+		sErr := gifPtr.SavePNG(path.Join(tmpFrameBasePath, strconv.Itoa(i+1)+".png"))
 		if sErr != nil {
 			common.DebugPrint(err)
 		}
 	}
-	// 开始生成gif动图
-	img_op.ConvertToGif(tmpFramePathsList, tmpOutBasePathAbs)
+	// 开始转换成gif歌格式
+	img_op.ConvertToGif(tmpFramePathsList, finalOutBasePath)
+	// 开始生成最终gif动图
+
+	var outSize = img_op.Size{X: 240, Y: 238}
+	img_op.OpGifFileToGifDone(finalOutBasePath, gifFrameNames, finalOutBasePath, outSize, 0.2)
 }
 
 // 加载当前帧对应的清单数据到CurrentPoint结构体中

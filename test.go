@@ -2,21 +2,12 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"strconv"
 )
 
 func test() {
-	curr_wd, err := os.Getwd()
-
-	if err != nil {
-
-		fmt.Println(err)
-
-		os.Exit(1)
-	}
-
-	// Print the current working directory
-	fmt.Println("--d")
-	fmt.Println(curr_wd)
-	fmt.Println("--d")
+	fa, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", 1.223), 32)
+	fa = fa * float64(100)
+	ia := int(fa)
+	print(ia)
 }
