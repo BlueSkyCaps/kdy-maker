@@ -12,6 +12,11 @@ import (
 func main() {
 	kdy.RunMaker(readCustom())
 	fmt.Println("done\n完成，位于Windows桌面。")
+	c := ""
+	_, err := fmt.Scanf("%v", &c)
+	if err != nil {
+		return
+	}
 }
 
 func readCustom() kdy.Custom {
@@ -51,6 +56,7 @@ func readCustom() kdy.Custom {
 		println("无效输入,已选纯黑色(默认)")
 		c = 0
 	}
+
 	fmt.Println("字体选择 0宋体(默认) 1楷体 2隶书 3黑体 4幼圆")
 	_, e = fmt.Scanf("%d\n", &f)
 	if e != nil {
