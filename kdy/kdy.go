@@ -22,6 +22,7 @@ var pointPath = path.Join("config", "point.json")
 var orgFramePathsList []string
 var tmpFramePathsList []string
 var gifFrameNames []string
+var customSel Custom
 var point Point
 
 func init() {
@@ -50,7 +51,9 @@ func init() {
 	}
 
 }
-func RunMaker() {
+func RunMaker(custom Custom) {
+	// 获取输入了的自定义选项
+	customSel = custom
 	// 开始读取图片对象
 	readGifHandler()
 }
@@ -76,20 +79,20 @@ func readGifHandler() {
 		}
 		gifPtr := gg.NewContextForImage(currentImage)
 		// 设置rgb颜色 值为0到1，原始数值/255得到相对的rgb值
-		gifPtr.SetRGB(0, 0.8, 0.4) //默认亮绿色
+		gifPtr.SetRGB(customSel.RGB[0], customSel.RGB[1], customSel.RGB[2])
 		if currentPoint.LeftFlag {
 			/* 开始渲染左边*/
-			if err := gifPtr.LoadFontFace("C:/Windows/Fonts/simsun.ttc", currentPoint.LeftSize); err != nil {
+			if err := gifPtr.LoadFontFace(customSel.FontPath, currentPoint.LeftSize); err != nil {
 				commGon.DebugPrint(err)
 			}
-			gifPtr.DrawString("拒绝", currentPoint.LeftX, currentPoint.LeftY)
+			gifPtr.DrawString(customSel.LeftText, currentPoint.LeftX, currentPoint.LeftY)
 		}
 		if currentPoint.RightFlag {
 			/* 开始渲染右边*/
-			if err := gifPtr.LoadFontFace("C:/Windows/Fonts/simsun.ttc", currentPoint.RightSize); err != nil {
+			if err := gifPtr.LoadFontFace(customSel.FontPath, currentPoint.RightSize); err != nil {
 				commGon.DebugPrint(err)
 			}
-			gifPtr.DrawString("加班", currentPoint.RightX, currentPoint.RightY)
+			gifPtr.DrawString(customSel.RightText, currentPoint.RightX, currentPoint.RightY)
 		}
 		// 保存当前帧效果图
 		sErr := gifPtr.SavePNG(path.Join(tmpFrameBasePath, strconv.Itoa(i+1)+".png"))
@@ -100,8 +103,8 @@ func readGifHandler() {
 	// 开始转换成gif歌格式
 	img_op.ConvertToGif(tmpFramePathsList, finalOutBasePath)
 	// 开始生成最终gif动图
-	var outSize = img_op.Size{X: 240, Y: 238}
-	outName := img_op.OpGifFileToGifDone(finalOutBasePath, gifFrameNames, finalOutBasePath, outSize, 0.2)
+	var outSize = img_op.Size{X: point.ClassicGif.X, Y: point.ClassicGif.Y}
+	outName := img_op.OpGifFileToGifDone(finalOutBasePath, gifFrameNames, finalOutBasePath, outSize, point.ClassicGif.Interval)
 	// 将动图移到Windows桌面
 	dirClear(outName)
 }
