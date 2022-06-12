@@ -3,13 +3,15 @@ package kdy
 import (
 	"encoding/json"
 	"github.com/BlueSkyCaps/GoGif/gof/img_op"
+	"github.com/BlueSkyCaps/commGon"
 	"github.com/fogleman/gg"
 	"io/ioutil"
-	"kdy-maker/common"
 	"os"
 	"path"
+	"runtime"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 var orgFrameBasePath = path.Join("static", "kdy_frames")
@@ -28,7 +30,7 @@ func init() {
 	for _, ele := range orgFramesDir {
 		tmpNames = append(tmpNames, ele.Name())
 	}
-	common.SortStringSlice(tmpNames, false)
+	commGon.SortStringSlice(tmpNames, false)
 	// 原始帧图在 "static/kdy_frames/" 目录下
 	for _, n := range tmpNames {
 		orgFramePathsList = append(orgFramePathsList, path.Join(orgFrameBasePath, n))
@@ -56,12 +58,12 @@ func readGifHandler() {
 	// 读出配置文件
 	jsonBytes, err := ioutil.ReadFile(pointPath)
 	if err != nil {
-		common.DebugPrint(err)
+		commGon.DebugPrint(err)
 	}
 	//反序列化json为结构体
 	err = json.Unmarshal(jsonBytes, &point)
 	if err != nil {
-		common.DebugPrint(err)
+		commGon.DebugPrint(err)
 	}
 
 	for i, mPath := range orgFramePathsList {
@@ -70,7 +72,7 @@ func readGifHandler() {
 		// 加载当前帧原始图
 		currentImage, err := gg.LoadPNG(mPath)
 		if err != nil {
-			common.DebugPrint(err)
+			commGon.DebugPrint(err)
 		}
 		gifPtr := gg.NewContextForImage(currentImage)
 		// 设置rgb颜色 值为0到1，原始数值/255得到相对的rgb值
@@ -78,29 +80,30 @@ func readGifHandler() {
 		if currentPoint.LeftFlag {
 			/* 开始渲染左边*/
 			if err := gifPtr.LoadFontFace("C:/Windows/Fonts/simsun.ttc", currentPoint.LeftSize); err != nil {
-				common.DebugPrint(err)
+				commGon.DebugPrint(err)
 			}
 			gifPtr.DrawString("拒绝", currentPoint.LeftX, currentPoint.LeftY)
 		}
 		if currentPoint.RightFlag {
 			/* 开始渲染右边*/
 			if err := gifPtr.LoadFontFace("C:/Windows/Fonts/simsun.ttc", currentPoint.RightSize); err != nil {
-				common.DebugPrint(err)
+				commGon.DebugPrint(err)
 			}
 			gifPtr.DrawString("加班", currentPoint.RightX, currentPoint.RightY)
 		}
 		// 保存当前帧效果图
 		sErr := gifPtr.SavePNG(path.Join(tmpFrameBasePath, strconv.Itoa(i+1)+".png"))
 		if sErr != nil {
-			common.DebugPrint(err)
+			commGon.DebugPrint(err)
 		}
 	}
 	// 开始转换成gif歌格式
 	img_op.ConvertToGif(tmpFramePathsList, finalOutBasePath)
 	// 开始生成最终gif动图
-
 	var outSize = img_op.Size{X: 240, Y: 238}
-	img_op.OpGifFileToGifDone(finalOutBasePath, gifFrameNames, finalOutBasePath, outSize, 0.2)
+	outName := img_op.OpGifFileToGifDone(finalOutBasePath, gifFrameNames, finalOutBasePath, outSize, 0.2)
+	// 将动图移到Windows桌面
+	dirClear(outName)
 }
 
 // 加载当前帧对应的清单数据到CurrentPoint结构体中
@@ -129,4 +132,25 @@ func currentPointIndexLoad(index int, point Point) CurrentPoint {
 		currentPoint.RightFlag = false
 	}
 	return currentPoint
+}
+
+func dirClear(outName string) {
+	homeDir, _ := os.UserHomeDir()
+	if runtime.GOOS == "windows" {
+		from, _ := syscall.UTF16PtrFromString(path.Join(finalOutBasePath, outName))
+		to, _ := syscall.UTF16PtrFromString(path.Join(homeDir, "desktop", outName))
+		// 调用winApi移动文件 os.Rename无法跨卷移动（或改用创建写入方式）
+		err := syscall.MoveFile(from, to)
+		if err != nil {
+			commGon.DebugPrint(err)
+		}
+	} else {
+		err := os.Rename(path.Join(finalOutBasePath, outName), path.Join(homeDir, "desktop", outName))
+		if err != nil {
+			commGon.DebugPrint(err)
+		}
+	}
+	commGon.RemoveFolderChildren(tmpFrameBasePath)
+	commGon.RemoveFolderChildren(finalOutBasePath)
+
 }
