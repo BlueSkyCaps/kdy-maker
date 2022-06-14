@@ -26,6 +26,16 @@ var customSel Custom
 var point Point
 
 func init() {
+	// 事先static目录下没有tmp和out文件夹，创建
+	info, err := os.Stat(tmpFrameBasePath)
+	if info == nil && err != nil {
+		commGon.CreateFolder(tmpFrameBasePath)
+	}
+	info, err = os.Stat(finalOutBasePath)
+	if info == nil && err != nil {
+		commGon.CreateFolder(finalOutBasePath)
+	}
+
 	orgFramesDir, _ := os.ReadDir(orgFrameBasePath)
 	var tmpNames []string
 	for _, ele := range orgFramesDir {

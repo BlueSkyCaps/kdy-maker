@@ -10,21 +10,18 @@ import (
 )
 
 func main() {
-	kdy.RunMaker(readCustom())
-	fmt.Println("done\n完成，位于Windows桌面。")
-	c := ""
-	_, err := fmt.Scanf("%v", &c)
-	if err != nil {
-		return
+	fmt.Println("LOOK!! 可达鸭表情包生成！选择输入并回车O(∩_∩)O...")
+	fmt.Println()
+	for true {
+		kdy.RunMaker(readCustom())
+		fmt.Println(">>> done\n>>> 完成，位于Windows桌面。")
+		fmt.Println()
 	}
 }
 
 func readCustom() kdy.Custom {
 	var customSel kdy.Custom
 	var c, f int
-	fmt.Println("LOOK!! 可达鸭表情包生成！选择输入并回车O(∩_∩)O...")
-	fmt.Println()
-
 	in := bufio.NewReader(os.Stdin)
 	fmt.Println("输入可达鸭左手边和右手边文字[用中(英)文逗号隔开，两边各不超过四个字数]：")
 
