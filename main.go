@@ -13,14 +13,15 @@ import (
 
 func init() {
 	if runtime.GOOS != "windows" {
-		fmt.Println("<<<该程序目前正确运行于Windows操作系统，回车后退出程序。<<<")
+		fmt.Println("<<<该程序目前正确运行于Windows操作系统，你可以在非win系统上调试出现的错误。回车后退出程序。<<<")
 		c := 0
 		fmt.Scanf("%v", &c)
 		os.Exit(0)
 	}
 }
 func main() {
-	go stdInputHookBgListenExit() // 请在Windows上配置mingw-64,否则编译失败；或者注释此条代码以完成编译
+	// 请在Windows上配置mingw-64,否则编译失败；或者注释下一行代码以完成编译
+	go stdInputHookBgListenExit()
 	fmt.Println("LOOK!! 可达鸭表情包生成！选择输入并回车, 按Esc键退出O(∩_∩)O...")
 	fmt.Println()
 	for true {
