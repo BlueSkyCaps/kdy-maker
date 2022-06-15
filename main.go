@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	hook "github.com/robotn/gohook"
 	"kdy-maker/kdy"
 	"os"
 	"strings"
@@ -10,7 +11,8 @@ import (
 )
 
 func main() {
-	fmt.Println("LOOK!! 可达鸭表情包生成！选择输入并回车O(∩_∩)O...")
+	go stdInputHookBgListenExit()
+	fmt.Println("LOOK!! 可达鸭表情包生成！选择输入并回车, 按Esc键退出O(∩_∩)O...")
 	fmt.Println()
 	for true {
 		kdy.RunMaker(readCustom())
@@ -63,4 +65,13 @@ func readCustom() kdy.Custom {
 	customSel.RGB = kdy.RgbMap[c]
 	customSel.FontPath = kdy.FontPathMap[f]
 	return customSel
+}
+
+func stdInputHookBgListenExit() {
+	evChan := hook.Start()
+	for ev := range evChan {
+		if ev.Kind == hook.KeyDown && ev.Keychar == 27 {
+			os.Exit(0)
+		}
+	}
 }
