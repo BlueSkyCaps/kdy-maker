@@ -6,12 +6,21 @@ import (
 	hook "github.com/robotn/gohook"
 	"kdy-maker/kdy"
 	"os"
+	"runtime"
 	"strings"
 	"unicode/utf8"
 )
 
+func init() {
+	if runtime.GOOS != "windows" {
+		fmt.Println("<<<该程序目前正确运行于Windows操作系统，回车后退出程序。<<<")
+		c := 0
+		fmt.Scanf("%v", &c)
+		os.Exit(0)
+	}
+}
 func main() {
-	go stdInputHookBgListenExit()
+	go stdInputHookBgListenExit() // 请在Windows上配置mingw-64,否则编译失败；或者注释此条代码以完成编译
 	fmt.Println("LOOK!! 可达鸭表情包生成！选择输入并回车, 按Esc键退出O(∩_∩)O...")
 	fmt.Println()
 	for true {
@@ -67,6 +76,7 @@ func readCustom() kdy.Custom {
 	return customSel
 }
 
+//  后台监听键盘事件 按下esc键时结束程序
 func stdInputHookBgListenExit() {
 	evChan := hook.Start()
 	for ev := range evChan {
