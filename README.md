@@ -8,7 +8,7 @@
 或基于本项目，进行修改：需要在Windows上配置mingw-64（实现键盘监听hook功能）,否则编译失败，或者注释main函数中此行代码：
 ```
 func main() {
-    //请在Windows上配置mingw-64,否则编译失败；或者注释下一行代码以完成编译 
+    //请在Windows上配置mingw-64,否则编译失败；或者注释下一行代码以完成编译。若要debug，也注释此代码，否则Goland IDE会异常卡顿。 
     go stdInputHookBgListenExit() 
     ....
 }
