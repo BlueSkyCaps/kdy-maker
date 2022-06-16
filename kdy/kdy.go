@@ -2,12 +2,14 @@ package kdy
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/BlueSkyCaps/GoGif/gof/img_op"
 	"github.com/BlueSkyCaps/commGon"
 	"github.com/fogleman/gg"
 	"io/ioutil"
 	"os"
 	"path"
+	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
@@ -93,14 +95,14 @@ func readGifHandler() {
 		if currentPoint.LeftFlag {
 			/* 开始渲染左边*/
 			if err := gifPtr.LoadFontFace(customSel.FontPath, currentPoint.LeftSize); err != nil {
-				commGon.DebugPrint(err)
+				fontIfIsErrorDetermine(err)
 			}
 			gifPtr.DrawString(customSel.LeftText, currentPoint.LeftX, currentPoint.LeftY)
 		}
 		if currentPoint.RightFlag {
 			/* 开始渲染右边*/
 			if err := gifPtr.LoadFontFace(customSel.FontPath, currentPoint.RightSize); err != nil {
-				commGon.DebugPrint(err)
+				fontIfIsErrorDetermine(err)
 			}
 			gifPtr.DrawString(customSel.RightText, currentPoint.RightX, currentPoint.RightY)
 		}
@@ -166,4 +168,15 @@ func dirClear(outName string) {
 	commGon.RemoveFolderChildren(tmpFrameBasePath)
 	commGon.RemoveFolderChildren(finalOutBasePath)
 
+}
+
+func fontIfIsErrorDetermine(err error) {
+	if strings.Contains(reflect.TypeOf(err).String(), "*fs.PathError") {
+		println("<<< 你的系统没有此字体文件，请重开程序尝试其他字体选项。")
+		c := 0
+		fmt.Scanf("%v", &c)
+		os.Exit(0)
+	} else {
+		commGon.DebugPrint(err)
+	}
 }
